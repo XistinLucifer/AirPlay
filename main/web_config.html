@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#eeeff4">
+    <title>AirPlay Configuration</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<!-- icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="2" fill="currentColor"/><rect x="13" y="3" width="8" height="6" rx="2" fill="currentColor"/><rect x="3" y="15" width="8" height="6" rx="2" fill="currentColor"/><rect x="13" y="11" width="8" height="10" rx="2" fill="currentColor"/></symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.6 16a5 5 0 0 1 6.8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19.5" r="1.6" fill="currentColor"/></symbol>
+    <symbol id="i-audio" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-device" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="14" r="3.2" fill="currentColor"/><circle cx="12" cy="7" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-bars" viewBox="0 0 24 24"><path d="M6 14v4M10 6v12M14 10v8M18 4v14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none"/></symbol>
+    <symbol id="i-restart" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.5-5.8M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<!-- Restart banner (hidden until a save occurs) -->
+<div id="restart-banner" class="hidden">
+    <div class="banner-in">
+        <span id="banner-text">Changes saved. A restart is required to apply them.</span>
+        <button id="banner-btn" type="button" onclick="restartDevice()">Restart now</button>
+    </div>
+</div>
+
+<div class="app">
+
+    <aside class="side">
+        <div class="brand">
+            <div class="brand-mark"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14c2.5-8 5-8 7.500 0s5 8 7.500 0 4-6 6.500-3"/></svg></div>
+            <div class="brand-name">AirPlay</div>
+        </div>
+        <nav class="nav" id="nav">
+            <button type="button" class="nav-item active" data-view="overview"><svg class="ico"><use href="#i-grid"/></svg>Overview</button>
+            <button type="button" class="nav-item" data-view="wifi"><svg class="ico"><use href="#i-wifi"/></svg>Wi-Fi</button>
+            <button type="button" class="nav-item" data-view="audio"><svg class="ico"><use href="#i-audio"/></svg>Audio output</button>
+            <button type="button" class="nav-item" data-view="device"><svg class="ico"><use href="#i-device"/></svg>Device</button>
+            <button type="button" class="nav-item" data-view="wled"><svg class="ico"><use href="#i-bars"/></svg>WLED sync</button>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <div class="top">
+            <h1 id="view-title">Overview</h1>
+            <div class="meta">
+                <div><span>Hostname</span><b>airplay.local</b></div>
+                <div><span>Protocol</span><b>AirPlay 1</b></div>
+            </div>
+        </div>
+
+        <!-- Overview: shows what is currently saved (not live status) -->
+        <section class="view active" id="view-overview">
+            <div class="chain">
+                <span class="pill"><i></i>Wi-Fi</span><span class="dots"></span>
+                <span class="pill"><i></i>AirPlay</span><span class="dots"></span>
+                <span class="pill"><i></i>DAC</span>
+            </div>
+            <div class="stats">
+                <button type="button" class="stat" data-go="wifi"><div class="bubble"><svg class="ico"><use href="#i-wifi"/></svg></div><div><span>Wi-Fi network</span><b id="s-ssid">-</b></div></button>
+                <button type="button" class="stat" data-go="device"><div class="bubble"><svg class="ico"><use href="#i-device"/></svg></div><div><span>Device name</span><b id="s-name">-</b></div></button>
+                <button type="button" class="stat" data-go="audio"><div class="bubble"><svg class="ico"><use href="#i-audio"/></svg></div><div><span>I2S pins (BCK / LCK / DIN)</span><b id="s-pins">-</b></div></button>
+                <button type="button" class="stat" data-go="wled"><div class="bubble"><svg class="ico"><use href="#i-bars"/></svg></div><div><span>WLED sync</span><b id="s-wled">-</b></div></button>
+            </div>
+            <div class="card restart-card">
+                <div><h2>Restart device</h2><p class="hint" style="margin:0">Needed after changing Wi-Fi, name, pins or WLED settings.</p></div>
+                <button type="button" class="btn ghost" onclick="restartDevice()"><svg class="ico"><use href="#i-restart"/></svg>Restart</button>
+            </div>
+            <p class="small">This page shows the saved settings, not live status.</p>
+        </section>
+
+        <!-- Wi-Fi -->
+        <section class="view" id="view-wifi">
+            <div class="card">
+                <h2>Wi-Fi network</h2>
+                <p class="hint">2.4 GHz only. The board cannot use 5 GHz networks.</p>
+                <form onsubmit="saveSection(event, '/save/wifi')">
+                    <div class="field">
+                        <label>Network name (SSID)</label>
+                        <input type="text" name="ssid" required value="{{CURRENT_SSID}}" autocomplete="off" autocapitalize="off">
+                    </div>
+                    <div class="field">
+                        <label>Password</label>
+                        <input type="password" name="password" required autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn">Save Wi-Fi</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Audio -->
+        <section class="view" id="view-audio">
+            <div class="card">
+                <h2>I2S pins</h2>
+                <p class="hint">GPIO numbers wired to the PCM5102A DAC. Do not use GPIO 6 to 11 (flash) or 16 and 17 (PSRAM).</p>
+                <form onsubmit="saveSection(event, '/save/audio')">
+                    <div class="row3 field">
+                        <div>
+                            <label>BCK pin</label>
+                            <input type="number" name="bck_pin" required value="{{BCK_PIN}}" min="0" max="39">
+                        </div>
+                        <div>
+                            <label>LCK pin</label>
+                            <input type="number" name="ws_pin" required value="{{WS_PIN}}" min="0" max="39">
+                        </div>
+                        <div>
+                            <label>DIN pin</label>
+                            <input type="number" name="dout_pin" required value="{{DOUT_PIN}}" min="0" max="39">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Save audio</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Device -->
+        <section class="view" id="view-device">
+            <div class="card">
+                <h2>Device name</h2>
+                <p class="hint">The name shown in the AirPlay list on your iPhone, iPad or Mac.</p>
+                <form onsubmit="saveSection(event, '/save/device')">
+                    <div class="field">
+                        <label>Name</label>
+                        <input type="text" name="device_name" value="{{CURRENT_DEVICE_NAME}}" placeholder="{{DEFAULT_DEVICE_NAME}}"
+                               maxlength="31" pattern="[A-Za-z0-9\-]+" title="Alphanumeric characters and hyphens only">
+                        <p class="small">Letters, numbers and hyphens only, 31 characters max.</p>
+                    </div>
+                    <button type="submit" class="btn">Save device</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- WLED -->
+        <section class="view" id="view-wled">
+            <div class="card">
+                <h2>WLED sync</h2>
+                <p class="hint">Send audio frequency data to WLED devices for reactive lighting.</p>
+                <form onsubmit="saveSection(event, '/save/wled')">
+                    <div class="switch-row">
+                        <div><b>Enable WLED sync</b><small>Off by default</small></div>
+                        <input type="checkbox" class="switch" name="enabled" value="1" {{WLED_ENABLED_CHECKED}} aria-label="Enable WLED sync">
+                    </div>
+                    <div class="field">
+                        <label>Destination host</label>
+                        <input type="text" name="host" value="{{WLED_HOST}}" placeholder="239.0.0.1" autocapitalize="off">
+                        <p class="small">Multicast (239.0.0.1) reaches all WLED devices. Use a specific IP to target one device.</p>
+                    </div>
+                    <div class="field">
+                        <label>Port</label>
+                        <input type="number" name="port" value="{{WLED_PORT}}" min="1" max="65535">
+                    </div>
+                    <div class="field">
+                        <label>Channel</label>
+                        <select name="channel">
+                            <option value="0" {{WLED_CHANNEL_MONO_SEL}}>Mono (L+R mix)</option>
+                            <option value="1" {{WLED_CHANNEL_LEFT_SEL}}>Left only</option>
+                            <option value="2" {{WLED_CHANNEL_RIGHT_SEL}}>Right only</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Save WLED</button>
+                </form>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    var TITLES = { overview: 'Overview', wifi: 'Wi-Fi settings', audio: 'Audio output', device: 'Device', wled: 'WLED sync' };
+
+    function field(name) {
+        var el = document.querySelector('[name="' + name + '"]');
+        return el ? el : { value: '', checked: false };
+    }
+
+    function summary() {
+        document.getElementById('s-ssid').textContent = field('ssid').value.trim() || 'Not set';
+        document.getElementById('s-name').textContent = field('device_name').value.trim() || 'AirPlay';
+        document.getElementById('s-pins').textContent =
+            field('bck_pin').value + ' / ' + field('ws_pin').value + ' / ' + field('dout_pin').value;
+        document.getElementById('s-wled').textContent = field('enabled').checked
+            ? 'On, ' + (field('host').value.trim() || '239.0.0.1') + ':' + field('port').value
+            : 'Off';
+    }
+
+    function show(view) {
+        if (!TITLES[view]) view = 'overview';
+        var views = document.querySelectorAll('.view');
+        for (var i = 0; i < views.length; i++) views[i].classList.toggle('active', views[i].id === 'view-' + view);
+        var items = document.querySelectorAll('.nav-item');
+        for (var j = 0; j < items.length; j++) items[j].classList.toggle('active', items[j].getAttribute('data-view') === view);
+        document.getElementById('view-title').textContent = TITLES[view];
+        try { history.replaceState(null, '', '#' + view); } catch (_) {}
+        window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+        var t = e.target.closest ? e.target.closest('[data-view],[data-go]') : null;
+        if (t) show(t.getAttribute('data-view') || t.getAttribute('data-go'));
+    });
+
+    function showRestartBanner() {
+        document.getElementById('restart-banner').classList.remove('hidden');
+    }
+
+    async function saveSection(event, endpoint) {
+        event.preventDefault();
+        var form = event.target;
+        var data = new URLSearchParams(new FormData(form));
+        try {
+            var response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: data.toString()
+            });
+            if (response.ok) {
+                summary();
+                showRestartBanner();
+            } else {
+                alert('Save failed. Please try again.');
+            }
+        } catch (err) {
+            alert('Error communicating with device.');
+        }
+    }
+
+    async function restartDevice() {
+        showRestartBanner();
+        try {
+            await fetch('/restart', { method: 'POST' });
+        } catch (_) {
+            // Device is restarting, connection will drop. This is expected.
+        }
+        document.getElementById('banner-text').textContent = 'Restarting device. Reconnect in a few seconds.';
+        document.getElementById('banner-btn').classList.add('hidden');
+    }
+
+    summary();
+    show(location.hash.slice(1));
+</script>
+
+</body>
+</html>

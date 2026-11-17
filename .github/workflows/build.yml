@@ -1,0 +1,47 @@
+name: Build AirPlay firmware
+
+# Builds the AirPlay firmware for the ORIGINAL ESP32 (ESP32-WROVER-E) with
+# ESP-IDF v5.5.1 and publishes every image needed for flashing.
+# Run it from the "Actions" tab with "Run workflow", or it runs on every push.
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Build with ESP-IDF v5.5.1 (target esp32)
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.5.1
+          target: esp32
+          path: .
+          command: |
+            idf.py build
+            idf.py size
+            cd build
+            esptool.py --chip esp32 merge_bin -o AirPlay-full-flash.bin @flash_args
+
+      - name: Show build results
+        run: |
+          ls -l build/*.bin build/bootloader/bootloader.bin build/partition_table/partition-table.bin
+          grep -E "CONFIG_IDF_TARGET=|CONFIG_SPIRAM=|CONFIG_ESPTOOLPY_FLASHSIZE=" build/../sdkconfig
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: AirPlay-firmware
+          path: |
+            build/AirPlay.bin
+            build/AirPlay-full-flash.bin
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+            build/ota_data_initial.bin
+            build/flasher_args.json
+            sdkconfig
+            partitions.csv
